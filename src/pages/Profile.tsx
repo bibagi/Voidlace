@@ -294,12 +294,12 @@ export const Profile: React.FC = () => {
               onClick={async () => {
                 if (!user) return;
                 try {
-                  const { saveToCloud } = await import('../services/cloudSync');
+                  const { saveToCloud } = await import('../services/syncService');
                   const success = await saveToCloud(user.id);
                   if (success) {
                     alert('✅ Данные сохранены в облако!');
                   } else {
-                    alert('⚠️ Облачная синхронизация не настроена. Используйте экспорт файла.');
+                    alert('❌ Ошибка сохранения в облако');
                   }
                 } catch (error) {
                   alert('❌ Ошибка сохранения в облако');
@@ -324,7 +324,7 @@ export const Profile: React.FC = () => {
               onClick={async () => {
                 if (!user) return;
                 try {
-                  const { loadFromCloud } = await import('../services/cloudSync');
+                  const { loadFromCloud } = await import('../services/syncService');
                   const success = await loadFromCloud(user.id);
                   if (success) {
                     alert('✅ Данные загружены из облака! Страница будет перезагружена.');

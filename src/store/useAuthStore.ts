@@ -95,7 +95,7 @@ export const useAuthStore = create<AuthStore>()(
 
           // Проверяем облачную синхронизацию
           try {
-            const { checkCloudForUpdates, loadFromCloud, saveToCloud } = await import('../services/cloudSync');
+            const { checkCloudForUpdates, loadFromCloud, saveToCloud } = await import('../services/syncService');
             const hasUpdates = await checkCloudForUpdates(newUser.id);
             
             if (hasUpdates) {

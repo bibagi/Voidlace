@@ -64,7 +64,7 @@ function App() {
         if (authData) {
           const auth = JSON.parse(authData);
           if (auth.state?.user?.id) {
-            const { setupAutoSync } = await import('./services/cloudSync');
+            const { setupAutoSync } = await import('./services/syncService');
             const cleanup = setupAutoSync(auth.state.user.id);
             
             // Очистка при размонтировании
