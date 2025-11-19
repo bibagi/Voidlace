@@ -46,18 +46,24 @@ export const Profile: React.FC = () => {
     }
   };
 
-  const processFile = (file: File) => {
+  const processFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
       alert('Пожалуйста, выберите изображение');
       return;
     }
 
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const result = reader.result as string;
-      updateAvatar(result);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const { processImageUpload } = await import('../utils/imageUtils');
+      const compressed = await processImageUpload(file, {
+        maxWidth: 400,
+        maxHeight: 400,
+        quality: 0.9,
+      });
+      updateAvatar(compressed);
+    } catch (error) {
+      console.error('Ошибка загрузки аватара:', error);
+      alert(error instanceof Error ? error.message : 'Ошибка загрузки изображения');
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -94,12 +100,12 @@ export const Profile: React.FC = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen py-8"
+      className="min-h-screen py-4 sm:py-8"
     >
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto px-2 sm:px-4 max-w-4xl">
         {/* Профиль */}
-        <div className="glass rounded-3xl p-8 mb-8">
-          <div className="flex items-center space-x-6">
+        <div className="glass rounded-2xl sm:rounded-3xl p-4 sm:p-8 mb-4 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
             <div 
               className="relative group cursor-pointer"
               onDragOver={handleDragOver}
@@ -144,46 +150,48 @@ export const Profile: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex-1">
+            <div className="flex-1 text-center sm:text-left w-full">
               {isEditingUsername ? (
-                <div className="flex items-center space-x-2 mb-2">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 mb-2">
                   <input
                     type="text"
                     value={newUsername}
                     onChange={(e) => setNewUsername(e.target.value)}
                     placeholder="Новое имя пользователя"
-                    className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="flex-1 px-3 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
                     autoFocus
                   />
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      if (newUsername.trim()) {
-                        updateProfile({ username: newUsername.trim() });
+                  <div className="flex space-x-2">
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        if (newUsername.trim()) {
+                          updateProfile({ username: newUsername.trim() });
+                          setIsEditingUsername(false);
+                          setNewUsername('');
+                        }
+                      }}
+                      className="flex-1 sm:flex-none px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600"
+                    >
+                      Сохранить
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
                         setIsEditingUsername(false);
                         setNewUsername('');
-                      }
-                    }}
-                    className="px-4 py-2 bg-primary-500 text-white rounded-xl hover:bg-primary-600"
-                  >
-                    Сохранить
-                  </motion.button>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setIsEditingUsername(false);
-                      setNewUsername('');
-                    }}
-                    className="px-4 py-2 glass rounded-xl"
-                  >
-                    Отмена
-                  </motion.button>
+                      }}
+                      className="flex-1 sm:flex-none px-4 py-2 glass rounded-xl"
+                    >
+                      Отмена
+                    </motion.button>
+                  </div>
                 </div>
               ) : (
-                <div className="flex items-center space-x-2 mb-2">
-                  <h1 className="text-3xl font-bold">{user.username}</h1>
+                <div className="flex items-center justify-center sm:justify-start space-x-2 mb-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold">{user.username}</h1>
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
@@ -200,9 +208,9 @@ export const Profile: React.FC = () => {
                   </motion.button>
                 </div>
               )}
-              <p className="text-gray-600 dark:text-gray-400 mb-1">{user.email}</p>
-              <div className="flex items-center space-x-2">
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-2">{user.email}</p>
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold ${
                   user.role === 'admin'
                     ? 'bg-gradient-to-r from-red-500 to-pink-500 text-white' 
                     : user.role === 'editor'
@@ -212,7 +220,7 @@ export const Profile: React.FC = () => {
                   {user.role === 'admin' ? 'Администратор' : user.role === 'editor' ? 'Редактор' : 'Пользователь'}
                 </span>
                 {user.isPremium && (
-                  <span className="px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-sm font-semibold rounded-full">
+                  <span className="px-2 sm:px-3 py-1 bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-xs sm:text-sm font-semibold rounded-full">
                     Premium
                   </span>
                 )}
@@ -223,16 +231,16 @@ export const Profile: React.FC = () => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleLogout}
-              className="p-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors"
+              className="p-2 sm:p-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors sm:self-start"
             >
-              <ArrowRightOnRectangleIcon className="w-6 h-6" />
+              <ArrowRightOnRectangleIcon className="w-5 h-5 sm:w-6 sm:h-6" />
             </motion.button>
           </div>
           
         </div>
 
         {/* Статистика */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-4 mb-4 sm:mb-8">
           <StatCard
             icon={BookOpenIcon}
             label="В библиотеке"
@@ -264,9 +272,9 @@ export const Profile: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass rounded-3xl p-8 mb-8"
+            className="glass rounded-2xl sm:rounded-3xl p-4 sm:p-8 mb-4 sm:mb-8"
           >
-            <h2 className="text-2xl font-bold mb-6">Настройки рамки аватара</h2>
+            <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Настройки рамки аватара</h2>
             <AvatarFrameSettings />
           </motion.div>
         )}
@@ -276,16 +284,16 @@ export const Profile: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass rounded-3xl p-8"
+            className="glass rounded-2xl sm:rounded-3xl p-4 sm:p-8"
           >
-            <div className="flex items-center space-x-3 mb-6">
-              <ShieldCheckIcon className="w-8 h-8 text-yellow-500" />
-              <h2 className="text-2xl font-bold">
+            <div className="flex items-center space-x-3 mb-4 sm:mb-6">
+              <ShieldCheckIcon className="w-6 h-6 sm:w-8 sm:h-8 text-yellow-500" />
+              <h2 className="text-xl sm:text-2xl font-bold">
                 {user.role === 'admin' ? 'Панель администратора' : 'Панель редактора'}
               </h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <AdminButton
                 label="Управление произведениями"
                 description="Добавить, редактировать или удалить"
@@ -336,13 +344,13 @@ const StatCard: React.FC<{
 }> = ({ icon: Icon, label, value, color }) => (
   <motion.div
     whileHover={{ scale: 1.05 }}
-    className="glass rounded-2xl p-6"
+    className="glass rounded-xl sm:rounded-2xl p-3 sm:p-6"
   >
-    <div className={`w-12 h-12 bg-gradient-to-br ${color} rounded-xl flex items-center justify-center mb-4 shadow-lg`}>
-      <Icon className="w-6 h-6 text-white" />
+    <div className={`w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br ${color} rounded-lg sm:rounded-xl flex items-center justify-center mb-2 sm:mb-4 shadow-lg`}>
+      <Icon className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
     </div>
-    <p className="text-3xl font-bold mb-1">{value}</p>
-    <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
+    <p className="text-xl sm:text-3xl font-bold mb-1">{value}</p>
+    <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{label}</p>
   </motion.div>
 );
 
@@ -356,17 +364,17 @@ const AdminButton: React.FC<{
     whileHover={{ scale: 1.02 }}
     whileTap={{ scale: 0.98 }}
     onClick={onClick}
-    className="glass rounded-xl p-6 text-left hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300"
+    className="glass rounded-xl p-4 sm:p-6 text-left hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all duration-300"
   >
     <div className="flex items-start space-x-3">
       {Icon && (
-        <div className="w-10 h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-          <Icon className="w-5 h-5 text-white" />
+        <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary-500 to-purple-600 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
+          <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
         </div>
       )}
       <div>
-        <h3 className="text-lg font-bold mb-2">{label}</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400">{description}</p>
+        <h3 className="text-base sm:text-lg font-bold mb-1 sm:mb-2">{label}</h3>
+        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">{description}</p>
       </div>
     </div>
   </motion.button>

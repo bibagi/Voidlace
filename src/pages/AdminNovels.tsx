@@ -262,14 +262,57 @@ const AddNovelModal: React.FC<{
             </div>
 
             <div>
-              <label className="block text-sm font-semibold mb-2">URL обложки</label>
-              <input
-                type="url"
-                value={formData.cover}
-                onChange={(e) => setFormData({ ...formData, cover: e.target.value })}
-                placeholder="https://example.com/cover.jpg"
-                className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
+              <label className="block text-sm font-semibold mb-2">Обложка</label>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex-1">
+                  <input
+                    type="url"
+                    value={formData.cover}
+                    onChange={(e) => setFormData({ ...formData, cover: e.target.value })}
+                    placeholder="URL обложки или загрузите файл"
+                    className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  />
+                </div>
+                <label className="relative cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        try {
+                          const { processImageUpload } = await import('../utils/imageUtils');
+                          const compressed = await processImageUpload(file, {
+                            maxWidth: 600,
+                            maxHeight: 900,
+                            quality: 0.85,
+                          });
+                          setFormData({ ...formData, cover: compressed });
+                        } catch (error) {
+                          console.error('Ошибка загрузки изображения:', error);
+                          alert(error instanceof Error ? error.message : 'Ошибка загрузки изображения');
+                        }
+                      }
+                    }}
+                    className="hidden"
+                  />
+                  <div className="px-4 py-3 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 transition-colors flex items-center space-x-2 whitespace-nowrap">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>Загрузить</span>
+                  </div>
+                </label>
+              </div>
+              {formData.cover && (
+                <div className="mt-3">
+                  <img
+                    src={formData.cover}
+                    alt="Предпросмотр"
+                    className="w-32 h-48 object-cover rounded-xl shadow-lg"
+                  />
+                </div>
+              )}
             </div>
 
             <div>

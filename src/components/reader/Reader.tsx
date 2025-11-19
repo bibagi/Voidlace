@@ -150,26 +150,26 @@ export const Reader: React.FC = () => {
         ref={contentRef}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="container mx-auto px-4 pt-24 pb-32"
+        className="container mx-auto px-2 sm:px-4 pt-20 sm:pt-24 pb-24 sm:pb-32"
         style={{
-          maxWidth: `${settings.textWidth}px`,
-          padding: `${settings.padding}px`,
-          paddingTop: '6rem',
-          paddingBottom: '8rem',
+          maxWidth: `${Math.min(settings.textWidth, window.innerWidth - 32)}px`,
+          padding: `${Math.min(settings.padding, 20)}px`,
+          paddingTop: window.innerWidth < 640 ? '5rem' : '6rem',
+          paddingBottom: window.innerWidth < 640 ? '6rem' : '8rem',
         }}
       >
         <article
-          className={cn('prose prose-lg max-w-none', fontFamilyClass)}
+          className={cn('prose prose-sm sm:prose-lg max-w-none', fontFamilyClass)}
           style={{
-            fontSize: `${settings.fontSize}px`,
+            fontSize: window.innerWidth < 640 ? `${Math.max(settings.fontSize - 2, 12)}px` : `${settings.fontSize}px`,
             lineHeight: settings.lineHeight,
           }}
         >
-          <h1 className="text-4xl font-bold mb-2">
+          <h1 className="text-2xl sm:text-4xl font-bold mb-2">
             Глава {currentChapter.number}: {currentChapter.title}
           </h1>
 
-          <div className="text-sm opacity-60 mb-8">
+          <div className="text-xs sm:text-sm opacity-60 mb-6 sm:mb-8">
             {new Date(currentChapter.publishDate).toLocaleDateString('ru-RU', {
               year: 'numeric',
               month: 'long',
@@ -184,12 +184,12 @@ export const Reader: React.FC = () => {
         </article>
 
         {/* Chapter Navigation at Bottom */}
-        <div className="mt-16 flex items-center justify-between">
+        <div className="mt-12 sm:mt-16 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-0">
           {prevChapter ? (
             <motion.button
               whileHover={{ scale: 1.05 }}
               onClick={() => navigate(`/reader/${novelId}/${prevChapter.id}`)}
-              className="px-6 py-3 glass rounded-xl hover:shadow-lg transition-shadow"
+              className="px-4 sm:px-6 py-2 sm:py-3 glass rounded-xl hover:shadow-lg transition-shadow text-sm sm:text-base"
             >
               ← Предыдущая глава
             </motion.button>
@@ -201,7 +201,7 @@ export const Reader: React.FC = () => {
             <motion.button
               whileHover={{ scale: 1.05 }}
               onClick={() => navigate(`/reader/${novelId}/${nextChapter.id}`)}
-              className="px-6 py-3 glass rounded-xl hover:shadow-lg transition-shadow"
+              className="px-4 sm:px-6 py-2 sm:py-3 glass rounded-xl hover:shadow-lg transition-shadow text-sm sm:text-base"
             >
               Следующая глава →
             </motion.button>
