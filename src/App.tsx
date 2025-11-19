@@ -57,6 +57,27 @@ function App() {
     // Автоматическое резервное копирование каждые 30 минут
     setupAutoBackup(30);
     
+    // Настройка облачной синхронизации
+    const setupCloudSync = async () => {
+      try {
+        const authData = localStorage.getItem('auth-storage');
+        if (authData) {
+          const auth = JSON.parse(authData);
+          if (auth.state?.user?.id) {
+            const { setupAutoSync } = await import('./services/cloudSync');
+            const cleanup = setupAutoSync(auth.state.user.id);
+            
+            // Очистка при размонтировании
+            return cleanup;
+          }
+        }
+      } catch (error) {
+        console.log('Облачная синхронизация недоступна');
+      }
+    };
+
+    setupCloudSync();
+    
     console.log('Синхронизация данных активирована');
   }, []);
 

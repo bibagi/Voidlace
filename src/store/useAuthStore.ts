@@ -11,7 +11,7 @@ interface AuthStore {
   user: User | null;
   isAuthenticated: boolean;
   savedAccounts: SavedAccount[];
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   switchAccount: (userId: string) => void;
   removeAccount: (userId: string) => void;
@@ -32,7 +32,7 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       savedAccounts: [],
       
-      login: (username: string, password: string) => {
+      login: async (username: string, password: string) => {
         let newUser: User | null = null;
         
         // Проверка админа
@@ -92,6 +92,26 @@ export const useAuthStore = create<AuthStore>()(
             isAuthenticated: true,
             savedAccounts: updatedAccounts
           });
+
+          // Проверяем облачную синхронизацию
+          try {
+            const { checkCloudForUpdates, loadFromCloud, saveToCloud } = await import('../services/cloudSync');
+            const hasUpdates = await checkCloudForUpdates(newUser.id);
+            
+            if (hasUpdates) {
+              const shouldSync = confirm('Найдены данные в облаке. Загрузить их?');
+              if (shouldSync) {
+                await loadFromCloud(newUser.id);
+                window.location.reload();
+              }
+            } else {
+              // Сохраняем текущие данные в облако
+              await saveToCloud(newUser.id);
+            }
+          } catch (error) {
+            console.log('Облачная синхронизация недоступна:', error);
+          }
+
           return true;
         }
         

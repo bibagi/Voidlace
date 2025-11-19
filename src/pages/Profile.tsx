@@ -292,6 +292,67 @@ export const Profile: React.FC = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={async () => {
+                if (!user) return;
+                try {
+                  const { saveToCloud } = await import('../services/cloudSync');
+                  const success = await saveToCloud(user.id);
+                  if (success) {
+                    alert('✅ Данные сохранены в облако!');
+                  } else {
+                    alert('⚠️ Облачная синхронизация не настроена. Используйте экспорт файла.');
+                  }
+                } catch (error) {
+                  alert('❌ Ошибка сохранения в облако');
+                }
+              }}
+              className="p-4 glass rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all flex items-center space-x-3"
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="font-semibold">Сохранить в облако</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Синхронизация между устройствами</p>
+              </div>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={async () => {
+                if (!user) return;
+                try {
+                  const { loadFromCloud } = await import('../services/cloudSync');
+                  const success = await loadFromCloud(user.id);
+                  if (success) {
+                    alert('✅ Данные загружены из облака! Страница будет перезагружена.');
+                    window.location.reload();
+                  } else {
+                    alert('ℹ️ Данные в облаке не найдены');
+                  }
+                } catch (error) {
+                  alert('❌ Ошибка загрузки из облака');
+                }
+              }}
+              className="p-4 glass rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all flex items-center space-x-3"
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="font-semibold">Загрузить из облака</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Восстановить данные</p>
+              </div>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={async () => {
                 const { downloadUserData } = await import('../utils/syncUtils');
                 downloadUserData();
               }}
@@ -303,8 +364,8 @@ export const Profile: React.FC = () => {
                 </svg>
               </div>
               <div className="text-left">
-                <p className="font-semibold">Экспорт данных</p>
-                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Скачать резервную копию</p>
+                <p className="font-semibold">Экспорт в файл</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Резервная копия</p>
               </div>
             </motion.button>
 
@@ -338,16 +399,18 @@ export const Profile: React.FC = () => {
                 </svg>
               </div>
               <div className="text-left">
-                <p className="font-semibold">Импорт данных</p>
+                <p className="font-semibold">Импорт из файла</p>
                 <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Восстановить из файла</p>
               </div>
             </motion.button>
           </div>
 
-          <div className="mt-4 p-3 sm:p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+          <div className="mt-4 p-3 sm:p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
+            <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2">
+              ☁️ <strong>Облачная синхронизация:</strong> Данные автоматически сохраняются в облако каждые 5 минут.
+            </p>
             <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
-              💡 <strong>Совет:</strong> Регулярно экспортируйте данные для синхронизации между устройствами. 
-              Скачайте файл на одном устройстве и импортируйте на другом.
+              💡 <strong>Совет:</strong> На новом устройстве войдите в аккаунт и нажмите "Загрузить из облака".
             </p>
           </div>
         </motion.div>
