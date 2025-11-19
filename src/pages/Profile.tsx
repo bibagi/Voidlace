@@ -279,6 +279,79 @@ export const Profile: React.FC = () => {
           </motion.div>
         )}
 
+        {/* Синхронизация данных */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="glass rounded-2xl sm:rounded-3xl p-4 sm:p-8 mb-4 sm:mb-8"
+        >
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Синхронизация данных</h2>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={async () => {
+                const { downloadUserData } = await import('../utils/syncUtils');
+                downloadUserData();
+              }}
+              className="p-4 glass rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all flex items-center space-x-3"
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="font-semibold">Экспорт данных</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Скачать резервную копию</p>
+              </div>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={async () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = async (e) => {
+                  const file = (e.target as HTMLInputElement).files?.[0];
+                  if (file) {
+                    const { uploadUserData } = await import('../utils/syncUtils');
+                    const success = await uploadUserData(file);
+                    if (success) {
+                      alert('Данные успешно импортированы! Страница будет перезагружена.');
+                      window.location.reload();
+                    } else {
+                      alert('Ошибка импорта данных');
+                    }
+                  }
+                };
+                input.click();
+              }}
+              className="p-4 glass rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all flex items-center space-x-3"
+            >
+              <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+              </div>
+              <div className="text-left">
+                <p className="font-semibold">Импорт данных</p>
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Восстановить из файла</p>
+              </div>
+            </motion.button>
+          </div>
+
+          <div className="mt-4 p-3 sm:p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+            <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
+              💡 <strong>Совет:</strong> Регулярно экспортируйте данные для синхронизации между устройствами. 
+              Скачайте файл на одном устройстве и импортируйте на другом.
+            </p>
+          </div>
+        </motion.div>
+
         {/* Админ/Редактор панель */}
         {(user.role === 'admin' || user.role === 'editor') && (
           <motion.div

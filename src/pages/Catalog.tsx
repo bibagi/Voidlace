@@ -79,43 +79,64 @@ export const Catalog: React.FC = () => {
     return <Loading />;
   }
   
+  const [showFilters, setShowFilters] = useState(false);
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="min-h-screen"
     >
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8">Каталог</h1>
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="flex items-center justify-between mb-4 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">Каталог</h1>
+          
+          {/* Mobile Filter Toggle */}
+          <button
+            onClick={() => setShowFilters(!showFilters)}
+            className="lg:hidden px-4 py-2 glass rounded-xl flex items-center space-x-2"
+          >
+            <FunnelIcon className="w-5 h-5" />
+            <span>Фильтры</span>
+          </button>
+        </div>
         
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-8">
           {/* Filters Sidebar */}
-          <div className="lg:w-80 flex-shrink-0">
-            <div className="glass rounded-2xl p-6 sticky top-24">
-              <div className="flex items-center space-x-2 mb-6">
-                <FunnelIcon className="w-5 h-5" />
-                <h2 className="text-xl font-bold">Фильтры</h2>
+          <div className={`lg:w-80 flex-shrink-0 ${showFilters ? 'block' : 'hidden lg:block'}`}>
+            <div className="glass rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:sticky lg:top-24">
+              <div className="flex items-center justify-between mb-4 sm:mb-6">
+                <div className="flex items-center space-x-2">
+                  <FunnelIcon className="w-5 h-5" />
+                  <h2 className="text-lg sm:text-xl font-bold">Фильтры</h2>
+                </div>
+                <button
+                  onClick={() => setShowFilters(false)}
+                  className="lg:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
+                >
+                  ✕
+                </button>
               </div>
               
               {/* Search */}
-              <div className="mb-6">
-                <label className="block text-sm font-semibold mb-2">Поиск</label>
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-xs sm:text-sm font-semibold mb-2">Поиск</label>
                 <div className="relative">
-                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Название или автор..."
-                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
+                    className="w-full pl-9 sm:pl-10 pr-4 py-2 text-sm sm:text-base bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
               </div>
               
               {/* Status */}
-              <div className="mb-6">
-                <label className="block text-sm font-semibold mb-2">Статус</label>
-                <div className="space-y-2">
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-xs sm:text-sm font-semibold mb-2">Статус</label>
+                <div className="space-y-1.5 sm:space-y-2">
                   {[
                     { value: 'all', label: 'Все' },
                     { value: 'ongoing', label: 'Выходит' },
@@ -125,7 +146,7 @@ export const Catalog: React.FC = () => {
                     <button
                       key={status.value}
                       onClick={() => setSelectedStatus(status.value)}
-                      className={`w-full px-4 py-2 rounded-xl text-left transition-all ${
+                      className={`w-full px-3 sm:px-4 py-1.5 sm:py-2 text-sm sm:text-base rounded-lg sm:rounded-xl text-left transition-all ${
                         selectedStatus === status.value
                           ? 'bg-primary-500 text-white shadow-lg'
                           : 'bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700'
@@ -138,9 +159,9 @@ export const Catalog: React.FC = () => {
               </div>
               
               {/* Sort */}
-              <div className="mb-6">
-                <label className="block text-sm font-semibold mb-2">Сортировка</label>
-                <div className="space-y-2">
+              <div className="mb-4 sm:mb-6">
+                <label className="block text-xs sm:text-sm font-semibold mb-2">Сортировка</label>
+                <div className="space-y-1.5 sm:space-y-2">
                   {[
                     { value: 'rating' as const, label: 'По рейтингу' },
                     { value: 'views' as const, label: 'По просмотрам' },

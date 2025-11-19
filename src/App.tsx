@@ -1,7 +1,9 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
+import { useEffect } from 'react';
 import { Header } from './components/layout/Header';
 import './utils/clearDatabase';
+import { setupStorageSync, setupAutoBackup } from './utils/syncUtils';
 import { Home } from './pages/Home';
 import { Catalog } from './pages/Catalog';
 import { NovelDetail } from './pages/NovelDetail';
@@ -48,6 +50,16 @@ function AnimatedRoutes() {
 }
 
 function App() {
+  useEffect(() => {
+    // Настройка синхронизации между вкладками
+    setupStorageSync();
+    
+    // Автоматическое резервное копирование каждые 30 минут
+    setupAutoBackup(30);
+    
+    console.log('Синхронизация данных активирована');
+  }, []);
+
   return (
     <Router>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-300">
