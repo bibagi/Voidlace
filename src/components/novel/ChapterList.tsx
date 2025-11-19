@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Novel } from '../../types';
 import { VolumeAccordion } from './VolumeAccordion';
 import { FunnelIcon } from '@heroicons/react/24/outline';

@@ -8,8 +8,7 @@ import {
   PlusIcon, 
   PencilIcon, 
   TrashIcon,
-  ArrowLeftIcon,
-  BookOpenIcon
+  ArrowLeftIcon
 } from '@heroicons/react/24/outline';
 
 export const AdminNovels: React.FC = () => {
@@ -40,7 +39,7 @@ export const AdminNovels: React.FC = () => {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (_novelId: string) => {
     if (confirm('Вы уверены, что хотите удалить это произведение?')) {
       try {
         // В будущем добавим метод delete в novelDB

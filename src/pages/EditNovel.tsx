@@ -6,9 +6,7 @@ import { novelDB } from '../db/database';
 import { Novel, Volume, Chapter } from '../types';
 import { 
   ArrowLeftIcon,
-  PlusIcon,
-  TrashIcon,
-  PencilIcon
+  PlusIcon
 } from '@heroicons/react/24/outline';
 
 export const EditNovel: React.FC = () => {

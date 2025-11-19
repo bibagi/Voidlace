@@ -9,14 +9,14 @@ export class VoidlaceDB extends Dexie {
 
   constructor() {
     super('VoidlaceDB');
-    
+
     // Версия 1 - старая схема (для совместимости)
     this.version(1).stores({
       novels: 'id, title, author, year, rating, status',
       library: 'id, userId, novelId, addedDate, status',
       progress: 'id, userId, novelId, chapterId, lastRead',
     });
-    
+
     // Версия 3 - новая схема с составными ключами
     this.version(3).stores({
       novels: 'id, title, author, year, rating, status',
@@ -72,7 +72,7 @@ export const novelDB = {
   search: async (query: string): Promise<Novel[]> => {
     const lowerQuery = query.toLowerCase();
     return await db.novels
-      .filter(novel => 
+      .filter(novel =>
         novel.title.toLowerCase().includes(lowerQuery) ||
         novel.author.toLowerCase().includes(lowerQuery)
       )
