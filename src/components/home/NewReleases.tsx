@@ -13,19 +13,19 @@ export const NewReleases: React.FC<NewReleasesProps> = ({ novels }) => {
   const newReleases = novels.slice(0, 10);
   
   return (
-    <section className="mb-12">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold">Новинки</h2>
+    <section className="mb-8 sm:mb-12">
+      <div className="flex items-center justify-between mb-4 sm:mb-6">
+        <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold">Новинки</h2>
         <button
           onClick={() => navigate('/catalog')}
-          className="text-primary-500 hover:text-primary-600 font-semibold"
+          className="text-sm sm:text-base text-primary-500 hover:text-primary-600 font-semibold"
         >
-          Смотреть все →
+          Все →
         </button>
       </div>
       
       <div className="relative">
-        <div className="flex space-x-6 overflow-x-auto pb-4 custom-scrollbar">
+        <div className="flex space-x-3 sm:space-x-4 lg:space-x-6 overflow-x-auto pb-4 custom-scrollbar">
           {newReleases.map((novel, index) => (
             <motion.div
               key={novel.id}
@@ -33,13 +33,13 @@ export const NewReleases: React.FC<NewReleasesProps> = ({ novels }) => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: index * 0.05 }}
               onClick={() => navigate(`/novel/${novel.id}`)}
-              className="flex-shrink-0 w-64 cursor-pointer group"
+              className="flex-shrink-0 w-36 sm:w-48 lg:w-64 cursor-pointer group"
             >
-              <div className="relative rounded-2xl overflow-hidden mb-3 shadow-lg group-hover:shadow-2xl transition-shadow">
+              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden mb-2 sm:mb-3 shadow-lg group-hover:shadow-2xl transition-shadow">
                 <img
                   src={novel.cover}
                   alt={novel.title}
-                  className="w-full h-80 object-cover group-hover:scale-110 transition-transform duration-300"
+                  className="w-full h-52 sm:h-64 lg:h-80 object-cover group-hover:scale-110 transition-transform duration-300"
                 />
                 
                 {/* Gradient Overlay */}

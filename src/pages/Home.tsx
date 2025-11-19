@@ -28,8 +28,8 @@ export const Home: React.FC = () => {
       animate={{ opacity: 1 }}
       className="min-h-screen"
     >
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-12">
+      <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+        <div className="mb-6 sm:mb-8 lg:mb-12">
           <HeroCarousel novels={novels} />
         </div>
         
