@@ -25,20 +25,75 @@ export const saveToCloud = async (userId: string): Promise<boolean> => {
   const firestore = db as Firestore;
 
   try {
+    // Получаем только важные данные (без произведений из БД)
+    const authData = localStorage.getItem('auth-storage');
+    const libraryData = localStorage.getItem('library-storage');
+    const readerSettings = localStorage.getItem('reader-settings');
+    const themeData = localStorage.getItem('theme-storage');
+
+    // Парсим и сохраняем только метаданные
+    let authToSave = '';
+    let libraryToSave = '';
+
+    if (authData) {
+      try {
+        const auth = JSON.parse(authData);
+        // Сохраняем только профиль пользователя, без savedAccounts
+        if (auth.state?.user) {
+          authToSave = JSON.stringify({
+            state: {
+              user: auth.state.user,
+              isAuthenticated: auth.state.isAuthenticated,
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Ошибка парсинга auth:', e);
+      }
+    }
+
+    if (libraryData) {
+      try {
+        const library = JSON.parse(libraryData);
+        // Сохраняем только ID произведений и прогресс, без полных данных
+        if (library.state) {
+          libraryToSave = JSON.stringify({
+            state: {
+              library: library.state.library || [],
+              readingProgress: library.state.readingProgress || {},
+            }
+          });
+        }
+      } catch (e) {
+        console.error('Ошибка парсинга library:', e);
+      }
+    }
+
     const data: CloudUserData = {
       userId,
-      auth: localStorage.getItem('auth-storage') || '',
-      library: localStorage.getItem('library-storage') || '',
-      readerSettings: localStorage.getItem('reader-settings') || '',
-      theme: localStorage.getItem('theme-storage') || '',
+      auth: authToSave,
+      library: libraryToSave,
+      readerSettings: readerSettings || '',
+      theme: themeData || '',
       lastSync: new Date().toISOString(),
     };
 
+    // Проверяем размер данных
+    const dataSize = new Blob([JSON.stringify(data)]).size;
+    if (dataSize > 900000) { // 900KB лимит (оставляем запас)
+      console.error('❌ Данные слишком большие:', dataSize, 'байт');
+      alert('⚠️ Слишком много данных для синхронизации. Используйте экспорт файла.');
+      return false;
+    }
+
     await setDoc(doc(firestore, 'users', userId), data);
-    console.log('✅ Данные сохранены в облако');
+    console.log('✅ Данные сохранены в облако (', dataSize, 'байт)');
     return true;
   } catch (error) {
     console.error('❌ Ошибка сохранения в облако:', error);
+    if (error instanceof Error && error.message.includes('longer than')) {
+      alert('⚠️ Данные слишком большие для облачной синхронизации. Используйте экспорт файла.');
+    }
     return false;
   }
 };
@@ -61,7 +116,30 @@ export const loadFromCloud = async (userId: string): Promise<boolean> => {
     if (docSnap.exists()) {
       const data = docSnap.data() as CloudUserData;
       
-      if (data.auth) localStorage.setItem('auth-storage', data.auth);
+      // Восстанавливаем данные, объединяя с существующими
+      if (data.auth) {
+        try {
+          const cloudAuth = JSON.parse(data.auth);
+          const localAuth = localStorage.getItem('auth-storage');
+          
+          if (localAuth) {
+            const local = JSON.parse(localAuth);
+            // Объединяем: берем профиль из облака, но сохраняем savedAccounts локально
+            const merged = {
+              state: {
+                ...cloudAuth.state,
+                savedAccounts: local.state?.savedAccounts || [],
+              }
+            };
+            localStorage.setItem('auth-storage', JSON.stringify(merged));
+          } else {
+            localStorage.setItem('auth-storage', data.auth);
+          }
+        } catch (e) {
+          console.error('Ошибка восстановления auth:', e);
+        }
+      }
+      
       if (data.library) localStorage.setItem('library-storage', data.library);
       if (data.readerSettings) localStorage.setItem('reader-settings', data.readerSettings);
       if (data.theme) localStorage.setItem('theme-storage', data.theme);

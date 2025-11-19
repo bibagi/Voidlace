@@ -405,13 +405,21 @@ export const Profile: React.FC = () => {
             </motion.button>
           </div>
 
-          <div className="mt-4 p-3 sm:p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
-            <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2">
-              ☁️ <strong>Облачная синхронизация:</strong> Данные автоматически сохраняются в облако каждые 5 минут.
-            </p>
-            <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
-              💡 <strong>Совет:</strong> На новом устройстве войдите в аккаунт и нажмите "Загрузить из облака".
-            </p>
+          <div className="mt-4 space-y-2">
+            <div className="p-3 sm:p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2">
+                ☁️ <strong>Облачная синхронизация:</strong> Сохраняет профиль, библиотеку и прогресс чтения.
+              </p>
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
+                💡 <strong>Совет:</strong> На новом устройстве войдите в аккаунт и нажмите "Загрузить из облака".
+              </p>
+            </div>
+            
+            <div className="p-3 sm:p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
+                ⚠️ <strong>Лимит:</strong> Облако хранит только метаданные (до 1MB). Для полного бэкапа используйте "Экспорт в файл".
+              </p>
+            </div>
           </div>
         </motion.div>
 
