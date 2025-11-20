@@ -4,6 +4,7 @@ import { MagnifyingGlassIcon, BookOpenIcon, HomeIcon, Squares2X2Icon } from '@he
 import { ThemeToggle } from './ThemeToggle';
 import { ProfileMenu } from './ProfileMenu';
 import { SyncIndicator } from './SyncIndicator';
+import { OnlineUsers } from '../common/OnlineUsers';
 import { useAuthStore } from '../../store/useAuthStore';
 import { cn } from '../../utils/helpers';
 
@@ -69,6 +70,9 @@ export const Header: React.FC = () => {
           
           {/* Right side */}
           <div className="flex items-center space-x-1 sm:space-x-3">
+            {/* Online Users */}
+            {isAuthenticated && <OnlineUsers />}
+            
             {/* Sync Indicator */}
             {isAuthenticated && <SyncIndicator />}
             

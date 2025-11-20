@@ -97,9 +97,39 @@ function App() {
     if (!user) return;
 
     let cleanup: (() => void) | undefined;
+    let firebaseCleanup: (() => void) | undefined;
 
     const setupCloudSync = async () => {
       try {
+        // Firebase синхронизация (если настроен)
+        try {
+          const { initFirebase, setupOnlinePresence, loadUserData, subscribeToUserData } = 
+            await import('./services/firebaseSync');
+          
+          initFirebase();
+          
+          // Устанавливаем онлайн статус
+          setupOnlinePresence(user.id, user);
+          
+          // Загружаем данные с сервера
+          const serverData = await loadUserData(user.id);
+          if (serverData) {
+            console.log('🔥 Данные загружены с Firebase');
+            // Здесь можно восстановить данные
+          }
+          
+          // Подписываемся на изменения в реальном времени
+          firebaseCleanup = subscribeToUserData(user.id, (data) => {
+            console.log('🔥 Получены обновления с Firebase:', data);
+            // Здесь обновляем локальные данные
+          });
+          
+          console.log('🔥 Firebase синхронизация активирована');
+        } catch (firebaseError) {
+          console.log('ℹ️ Firebase не настроен, используем Upstash');
+        }
+        
+        // Upstash синхронизация (резервная)
         const { setupAutoSync, loadFromCloud, checkCloudForUpdates } = await import('./services/syncService');
         
         // Проверяем, есть ли данные в облаке
@@ -134,6 +164,7 @@ function App() {
 
     return () => {
       if (cleanup) cleanup();
+      if (firebaseCleanup) firebaseCleanup();
     };
   }, [user]);
 
