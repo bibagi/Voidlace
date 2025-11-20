@@ -15,16 +15,17 @@ export interface SyncData {
  */
 export const saveToCloud = async (userId: string): Promise<boolean> => {
   try {
-    // Собираем только важные данные
+    // Экспортируем всю БД
+    const { exportDatabase } = await import('../db/database');
+    const dbExport = await exportDatabase();
+    
+    // Собираем настройки из localStorage
     const authData = localStorage.getItem('auth-storage');
-    const libraryData = localStorage.getItem('library-storage');
     const readerSettings = localStorage.getItem('reader-settings');
     const themeData = localStorage.getItem('theme-storage');
 
-    // Оптимизируем данные
+    // Оптимизируем auth данные
     let authToSave = '';
-    let libraryToSave = '';
-
     if (authData) {
       try {
         const auth = JSON.parse(authData);
@@ -41,25 +42,9 @@ export const saveToCloud = async (userId: string): Promise<boolean> => {
       }
     }
 
-    if (libraryData) {
-      try {
-        const library = JSON.parse(libraryData);
-        if (library.state) {
-          libraryToSave = JSON.stringify({
-            state: {
-              library: library.state.library || [],
-              readingProgress: library.state.readingProgress || {},
-            }
-          });
-        }
-      } catch (e) {
-        console.error('Ошибка парсинга library:', e);
-      }
-    }
-
     const data: SyncData = {
       auth: authToSave,
-      library: libraryToSave,
+      library: dbExport, // Вся БД в одном поле
       readerSettings: readerSettings || '',
       theme: themeData || '',
     };
@@ -140,7 +125,16 @@ export const loadFromCloud = async (userId: string): Promise<boolean> => {
       }
     }
     
-    if (data.library) localStorage.setItem('library-storage', data.library);
+    // Восстанавливаем всю БД
+    if (data.library) {
+      try {
+        const { importDatabase } = await import('../db/database');
+        await importDatabase(data.library);
+      } catch (e) {
+        console.error('Ошибка восстановления БД:', e);
+      }
+    }
+    
     if (data.readerSettings) localStorage.setItem('reader-settings', data.readerSettings);
     if (data.theme) localStorage.setItem('theme-storage', data.theme);
 

@@ -37,34 +37,54 @@ export const useAuthStore = create<AuthStore>()(
         
         // Проверка админа
         if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-          newUser = {
-            id: 'admin-1',
-            username: 'Admin',
-            email: 'admin@voidlace.com',
-            role: 'admin',
-            avatar: 'https://ui-avatars.com/api/?name=Admin&background=0ea5e9&color=fff',
-            createdAt: new Date().toISOString(),
-            avatarFrame: {
-              enabled: true,
-              color: 'from-yellow-400 to-orange-500',
-              animation: 'spin',
-              thickness: 4,
-            },
-          };
+          // Проверяем существует ли админ в БД
+          const { userDB } = await import('../db/database');
+          const existingAdmin = await userDB.getById('admin-1');
+          
+          if (existingAdmin) {
+            newUser = existingAdmin;
+          } else {
+            newUser = {
+              id: 'admin-1',
+              username: 'Admin',
+              email: 'admin@voidlace.com',
+              role: 'admin',
+              avatar: 'https://ui-avatars.com/api/?name=Admin&background=0ea5e9&color=fff',
+              createdAt: new Date().toISOString(),
+              avatarFrame: {
+                enabled: true,
+                color: 'from-yellow-400 to-orange-500',
+                animation: 'spin',
+                thickness: 4,
+              },
+            };
+            // Сохраняем админа в БД
+            await userDB.insert(newUser);
+          }
         } else if (username && password) {
-          // Обычный пользователь (для демо)
-          newUser = {
-            id: `user-${Date.now()}`,
-            username: username,
-            email: `${username}@example.com`,
-            role: 'user',
-            avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random`,
-            createdAt: new Date().toISOString(),
-            bio: '',
-            telegram: '',
-            discord: '',
-            website: '',
-          };
+          // Проверяем существует ли пользователь в БД
+          const { userDB } = await import('../db/database');
+          const existingUser = await userDB.getByUsername(username);
+          
+          if (existingUser) {
+            newUser = existingUser;
+          } else {
+            // Создаём нового пользователя
+            newUser = {
+              id: `user-${Date.now()}`,
+              username: username,
+              email: `${username}@example.com`,
+              role: 'user',
+              avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(username)}&background=random`,
+              createdAt: new Date().toISOString(),
+              bio: '',
+              telegram: '',
+              discord: '',
+              website: '',
+            };
+            // Сохраняем в БД
+            await userDB.insert(newUser);
+          }
         }
         
         if (newUser) {
@@ -178,7 +198,7 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
       
-      updateProfile: (updates: Partial<User>) => {
+      updateProfile: async (updates: Partial<User>) => {
         const user = get().user;
         if (user) {
           const updatedUser = { ...user, ...updates };
@@ -195,6 +215,14 @@ export const useAuthStore = create<AuthStore>()(
             user: updatedUser,
             savedAccounts: updatedAccounts
           });
+
+          // Сохраняем в БД
+          try {
+            const { userDB } = await import('../db/database');
+            await userDB.update(updatedUser);
+          } catch (error) {
+            console.error('Ошибка обновления профиля в БД:', error);
+          }
         }
       },
       

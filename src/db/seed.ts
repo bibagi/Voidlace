@@ -22,12 +22,16 @@ const generateChapterContent = (chapterNum: number, title: string): string => {
 Часы превращались в дни, дни в недели. Тренировки были изнурительными, но с каждым днём он становился сильнее.`;
 };
 
-export const seedDatabase = async () => {
+export const seedDatabase = async (force: boolean = false) => {
   // Проверяем, есть ли уже данные
   const existing = await novelDB.getAll();
-  if (existing.length > 0) {
+  if (existing.length > 0 && !force) {
     console.log('База данных уже содержит данные');
     return;
+  }
+  
+  if (force) {
+    console.log('Принудительное пересоздание данных...');
   }
 
   const novels: Novel[] = [

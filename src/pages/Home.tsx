@@ -5,7 +5,6 @@ import { ContinueReading } from '../components/home/ContinueReading';
 import { StaffPicks } from '../components/home/StaffPicks';
 import { CommunityPicks } from '../components/home/CommunityPicks';
 import { NewReleases } from '../components/home/NewReleases';
-import { TopWeek } from '../components/home/TopWeek';
 import { useNovels } from '../hooks/useNovels';
 import { useLibraryStore } from '../store/useLibraryStore';
 import { Loading } from '../components/common/Loading';
@@ -37,7 +36,6 @@ export const Home: React.FC = () => {
         <StaffPicks novels={novels} />
         <CommunityPicks novels={novels} />
         <NewReleases novels={novels} />
-        <TopWeek novels={novels} />
       </div>
     </motion.div>
   );

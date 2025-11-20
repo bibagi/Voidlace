@@ -15,6 +15,7 @@ export const Catalog: React.FC = () => {
   const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'rating' | 'views' | 'newest'>('rating');
+  const [showFilters, setShowFilters] = useState(false);
   
   // Получаем все уникальные жанры
   const allGenres = useMemo(() => {
@@ -78,8 +79,6 @@ export const Catalog: React.FC = () => {
   if (loading) {
     return <Loading />;
   }
-  
-  const [showFilters, setShowFilters] = useState(false);
 
   return (
     <motion.div

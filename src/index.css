@@ -40,7 +40,7 @@
     @apply bg-clip-text text-transparent;
   }
   
-  /* Кастомный скроллбар */
+  /* Кастомный скроллбар для горизонтальных списков */
   .custom-scrollbar::-webkit-scrollbar {
     @apply w-2 h-2;
   }
@@ -52,6 +52,80 @@
   .custom-scrollbar::-webkit-scrollbar-thumb {
     @apply bg-gray-300 dark:bg-gray-700 rounded-full;
     @apply hover:bg-gray-400 dark:hover:bg-gray-600;
+  }
+  
+  /* Глобальный скроллбар страницы - уникальный дизайн */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, 
+      #3b82f6 0%,
+      #8b5cf6 25%,
+      #a855f7 50%,
+      #d946ef 75%,
+      #ec4899 100%
+    );
+    border-radius: 100px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 
+      0 0 10px rgba(139, 92, 246, 0.3),
+      inset 0 0 10px rgba(255, 255, 255, 0.1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .dark ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, 
+      #3b82f6 0%,
+      #8b5cf6 25%,
+      #a855f7 50%,
+      #d946ef 75%,
+      #ec4899 100%
+    );
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 
+      0 0 15px rgba(139, 92, 246, 0.5),
+      inset 0 0 10px rgba(255, 255, 255, 0.05);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, 
+      #2563eb 0%,
+      #7c3aed 25%,
+      #9333ea 50%,
+      #c026d3 75%,
+      #db2777 100%
+    );
+    box-shadow: 
+      0 0 20px rgba(139, 92, 246, 0.6),
+      0 0 40px rgba(236, 72, 153, 0.4),
+      inset 0 0 15px rgba(255, 255, 255, 0.2);
+    transform: scaleX(1.2);
+  }
+  
+  ::-webkit-scrollbar-thumb:active {
+    background: linear-gradient(180deg, 
+      #1d4ed8 0%,
+      #6d28d9 25%,
+      #7e22ce 50%,
+      #a21caf 75%,
+      #be185d 100%
+    );
+  }
+  
+  /* Firefox скроллбар */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #8b5cf6 transparent;
+  }
+  
+  .dark * {
+    scrollbar-color: #a855f7 transparent;
   }
   
   /* Анимация появления */

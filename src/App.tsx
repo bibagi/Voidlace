@@ -6,6 +6,7 @@ import './utils/clearDatabase';
 import { setupStorageSync, setupAutoBackup } from './utils/syncUtils';
 import { Home } from './pages/Home';
 import { Catalog } from './pages/Catalog';
+import { Library } from './pages/Library';
 import { NovelDetail } from './pages/NovelDetail';
 import { ReaderPage } from './pages/ReaderPage';
 import { Login } from './pages/Login';
@@ -33,6 +34,7 @@ function AnimatedRoutes() {
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<Home />} />
           <Route path="/catalog" element={<Catalog />} />
+          <Route path="/library" element={<Library />} />
           <Route path="/novel/:id" element={<NovelDetail />} />
           <Route path="/reader/:novelId/:chapterId" element={<ReaderPage />} />
           <Route path="/login" element={<Login />} />
@@ -51,6 +53,19 @@ function AnimatedRoutes() {
 
 function App() {
   useEffect(() => {
+    // Инициализация БД
+    const initDB = async () => {
+      try {
+        const { initDatabase } = await import('./db/database');
+        await initDatabase();
+        console.log('✅ База данных инициализирована');
+      } catch (error) {
+        console.error('❌ Ошибка инициализации БД:', error);
+      }
+    };
+    
+    initDB();
+    
     // Настройка синхронизации между вкладками
     setupStorageSync();
     
