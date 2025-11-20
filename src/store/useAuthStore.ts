@@ -220,6 +220,11 @@ export const useAuthStore = create<AuthStore>()(
           try {
             const { userDB } = await import('../db/database');
             await userDB.update(updatedUser);
+            
+            // Триггерим автосинхронизацию
+            const { autoExportDatabase, broadcastSync } = await import('../services/localSync');
+            await autoExportDatabase();
+            broadcastSync();
           } catch (error) {
             console.error('Ошибка обновления профиля в БД:', error);
           }

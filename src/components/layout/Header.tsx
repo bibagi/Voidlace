@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { MagnifyingGlassIcon, BookOpenIcon, HomeIcon, Squares2X2Icon } from '@heroicons/react/24/outline';
 import { ThemeToggle } from './ThemeToggle';
 import { ProfileMenu } from './ProfileMenu';
+import { SyncIndicator } from './SyncIndicator';
 import { useAuthStore } from '../../store/useAuthStore';
 import { cn } from '../../utils/helpers';
 
@@ -68,6 +69,9 @@ export const Header: React.FC = () => {
           
           {/* Right side */}
           <div className="flex items-center space-x-1 sm:space-x-3">
+            {/* Sync Indicator */}
+            {isAuthenticated && <SyncIndicator />}
+            
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

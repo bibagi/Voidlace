@@ -10,7 +10,7 @@ import {
   BookOpenIcon, 
   HeartIcon, 
   ClockIcon,
-  ArrowRightOnRectangleIcon,
+  ArrowRightStartOnRectangleIcon,
   ShieldCheckIcon,
   CameraIcon
 } from '@heroicons/react/24/outline';
@@ -233,7 +233,7 @@ export const Profile: React.FC = () => {
               onClick={handleLogout}
               className="p-2 sm:p-3 bg-red-500 text-white rounded-xl hover:bg-red-600 transition-colors sm:self-start"
             >
-              <ArrowRightOnRectangleIcon className="w-5 h-5 sm:w-6 sm:h-6" />
+              <ArrowRightStartOnRectangleIcon className="w-5 h-5 sm:w-6 sm:h-6" />
             </motion.button>
           </div>
           
@@ -406,18 +406,18 @@ export const Profile: React.FC = () => {
           </div>
 
           <div className="mt-4 space-y-2">
-            <div className="p-3 sm:p-4 bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl">
+            <div className="p-3 sm:p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl">
               <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2">
-                ☁️ <strong>Облачная синхронизация:</strong> Сохраняет профиль, библиотеку и прогресс чтения.
+                ✨ <strong>Автоматическая синхронизация:</strong> Все изменения автоматически сохраняются локально.
               </p>
               <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
-                💡 <strong>Совет:</strong> На новом устройстве войдите в аккаунт и нажмите "Загрузить из облака".
+                💾 <strong>Синхронизация между устройствами:</strong> Скачайте БД на одном устройстве и загрузите на другом.
               </p>
             </div>
             
-            <div className="p-3 sm:p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+            <div className="p-3 sm:p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
               <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
-                ⚠️ <strong>Лимит:</strong> Облако хранит только метаданные (до 1MB). Для полного бэкапа используйте "Экспорт в файл".
+                🔄 <strong>Как синхронизировать:</strong> Нажмите "Скачать БД" → Перенесите файл → Нажмите "Загрузить БД" на другом устройстве.
               </p>
             </div>
           </div>

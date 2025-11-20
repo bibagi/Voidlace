@@ -13,8 +13,12 @@ export interface SyncData {
 /**
  * Сохраняет данные пользователя в облако
  */
-export const saveToCloud = async (userId: string): Promise<boolean> => {
+export const saveToCloud = async (userId: string, silent = false): Promise<boolean> => {
   try {
+    if (!silent) {
+      window.dispatchEvent(new CustomEvent('sync:start'));
+    }
+
     // Экспортируем всю БД
     const { exportDatabase } = await import('../db/database');
     const dbExport = await exportDatabase();
@@ -67,9 +71,19 @@ export const saveToCloud = async (userId: string): Promise<boolean> => {
 
     const result = await response.json();
     console.log('✅ Данные сохранены в облако');
+    
+    if (!silent) {
+      window.dispatchEvent(new CustomEvent('sync:success'));
+    }
+    
     return result.success;
   } catch (error) {
     console.error('❌ Ошибка сохранения в облако:', error);
+    
+    if (!silent) {
+      window.dispatchEvent(new CustomEvent('sync:error'));
+    }
+    
     return false;
   }
 };
@@ -172,41 +186,71 @@ export const checkCloudForUpdates = async (userId: string): Promise<boolean> => 
  * Автоматическая синхронизация
  */
 export const setupAutoSync = (userId: string) => {
-  // Сохраняем при изменении localStorage
-  const handleStorageChange = () => {
-    saveToCloud(userId);
+  let lastSyncTime = Date.now();
+  let syncTimeout: NodeJS.Timeout | null = null;
+
+  // Дебаунс для предотвращения частых сохранений
+  const debouncedSave = () => {
+    if (syncTimeout) clearTimeout(syncTimeout);
+    
+    syncTimeout = setTimeout(() => {
+      const now = Date.now();
+      // Сохраняем не чаще раза в 30 секунд
+      if (now - lastSyncTime > 30000) {
+        saveToCloud(userId, true); // silent mode для фоновой синхронизации
+        lastSyncTime = now;
+      }
+    }, 2000); // Ждем 2 секунды после последнего изменения
+  };
+
+  // Отслеживаем изменения в localStorage
+  const handleStorageChange = (e: StorageEvent) => {
+    if (e.key && ['auth-storage', 'reader-settings', 'theme-storage'].includes(e.key)) {
+      console.log('📝 Изменения в localStorage, планируем синхронизацию...');
+      debouncedSave();
+    }
   };
 
   window.addEventListener('storage', handleStorageChange);
 
-  // Периодическое сохранение (каждые 5 минут)
+  // Периодическое сохранение (каждые 3 минуты)
   const interval = setInterval(() => {
-    saveToCloud(userId);
-  }, 5 * 60 * 1000);
+    console.log('⏰ Периодическая синхронизация...');
+    saveToCloud(userId, true);
+    lastSyncTime = Date.now();
+  }, 3 * 60 * 1000);
 
   // Сохраняем при закрытии страницы
-  const handleBeforeUnload = () => {
-    // Используем sendBeacon для надежной отправки при закрытии
-    const data = {
-      userId,
-      action: 'save',
-      data: {
-        auth: localStorage.getItem('auth-storage') || '',
-        library: localStorage.getItem('library-storage') || '',
-        readerSettings: localStorage.getItem('reader-settings') || '',
-        theme: localStorage.getItem('theme-storage') || '',
-      }
-    };
-    
-    navigator.sendBeacon(API_URL, JSON.stringify(data));
+  const handleBeforeUnload = async () => {
+    console.log('👋 Сохранение перед закрытием...');
+    // Синхронное сохранение перед закрытием
+    await saveToCloud(userId, true);
   };
 
   window.addEventListener('beforeunload', handleBeforeUnload);
 
+  // Сохраняем при потере фокуса (переключение вкладки)
+  const handleVisibilityChange = () => {
+    if (document.hidden) {
+      console.log('👁️ Вкладка скрыта, сохраняем...');
+      saveToCloud(userId, true);
+      lastSyncTime = Date.now();
+    }
+  };
+
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+
+  // Начальная синхронизация
+  console.log('☁️ Начальная синхронизация...');
+  saveToCloud(userId, false); // Показываем индикатор при первой синхронизации
+
   // Функция очистки
   return () => {
+    if (syncTimeout) clearTimeout(syncTimeout);
     window.removeEventListener('storage', handleStorageChange);
     window.removeEventListener('beforeunload', handleBeforeUnload);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
     clearInterval(interval);
+    console.log('🛑 Автосинхронизация остановлена');
   };
 };

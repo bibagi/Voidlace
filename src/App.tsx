@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import { AnimatePresence } from 'framer-motion';
 import { useEffect } from 'react';
 import { Header } from './components/layout/Header';
+import { useAuthStore } from './store/useAuthStore';
 import './utils/clearDatabase';
 import { setupStorageSync, setupAutoBackup } from './utils/syncUtils';
 import { Home } from './pages/Home';
@@ -52,6 +53,8 @@ function AnimatedRoutes() {
 }
 
 function App() {
+  const { user } = useAuthStore();
+
   useEffect(() => {
     // Инициализация БД
     const initDB = async () => {
@@ -72,29 +75,67 @@ function App() {
     // Автоматическое резервное копирование каждые 30 минут
     setupAutoBackup(30);
     
-    // Настройка облачной синхронизации
+    // Настройка локальной автосинхронизации
+    const setupLocalSync = async () => {
+      try {
+        const { setupAutoSync } = await import('./services/localSync');
+        const cleanup = setupAutoSync();
+        console.log('✅ Автоматическая синхронизация активирована');
+        return cleanup;
+      } catch (error) {
+        console.error('❌ Ошибка настройки синхронизации:', error);
+      }
+    };
+
+    setupLocalSync();
+    
+    console.log('Синхронизация данных активирована');
+  }, []);
+
+  // Облачная синхронизация при входе пользователя
+  useEffect(() => {
+    if (!user) return;
+
+    let cleanup: (() => void) | undefined;
+
     const setupCloudSync = async () => {
       try {
-        const authData = localStorage.getItem('auth-storage');
-        if (authData) {
-          const auth = JSON.parse(authData);
-          if (auth.state?.user?.id) {
-            const { setupAutoSync } = await import('./services/syncService');
-            const cleanup = setupAutoSync(auth.state.user.id);
-            
-            // Очистка при размонтировании
-            return cleanup;
+        const { setupAutoSync, loadFromCloud, checkCloudForUpdates } = await import('./services/syncService');
+        
+        // Проверяем, есть ли данные в облаке
+        const hasCloudData = await checkCloudForUpdates(user.id);
+        
+        if (hasCloudData) {
+          // Спрашиваем пользователя о загрузке
+          const shouldLoad = confirm(
+            '☁️ Найдены данные в облаке!\n\n' +
+            'Хотите загрузить их?\n' +
+            '(Это заменит текущие локальные данные)'
+          );
+          
+          if (shouldLoad) {
+            const success = await loadFromCloud(user.id);
+            if (success) {
+              alert('✅ Данные загружены из облака! Страница будет перезагружена.');
+              window.location.reload();
+            }
           }
         }
+        
+        // Настраиваем автоматическую синхронизацию
+        cleanup = setupAutoSync(user.id);
+        console.log('☁️ Облачная синхронизация активирована');
       } catch (error) {
-        console.log('Облачная синхронизация недоступна');
+        console.error('❌ Ошибка настройки облачной синхронизации:', error);
       }
     };
 
     setupCloudSync();
-    
-    console.log('Синхронизация данных активирована');
-  }, []);
+
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, [user]);
 
   return (
     <Router>
