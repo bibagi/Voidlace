@@ -103,30 +103,50 @@ function App() {
       try {
         // Firebase синхронизация (если настроен)
         try {
-          const { initFirebase, setupOnlinePresence, loadUserData, subscribeToUserData } = 
+          const { initFirebase, setupOnlinePresence, loadUserData, subscribeToUserData, saveUserData } = 
             await import('./services/firebaseSync');
           
           initFirebase();
           
           // Устанавливаем онлайн статус
           setupOnlinePresence(user.id, user);
+          console.log('🔥 Онлайн статус установлен');
           
-          // Загружаем данные с сервера
-          const serverData = await loadUserData(user.id);
-          if (serverData) {
-            console.log('🔥 Данные загружены с Firebase');
-            // Здесь можно восстановить данные
+          // Пробуем загрузить данные с сервера
+          try {
+            const serverData = await loadUserData(user.id);
+            if (serverData) {
+              console.log('🔥 Данные загружены с Firebase');
+              // Здесь можно восстановить данные
+            } else {
+              console.log('🔥 Данных на сервере нет, создаем первую синхронизацию');
+              // Сохраняем текущие данные на сервер
+              await saveUserData(user.id, {
+                profile: user,
+                library: [],
+                progress: {},
+                settings: {},
+              });
+            }
+          } catch (loadError: any) {
+            console.log('⚠️ Не удалось загрузить данные с Firebase:', loadError.message);
+            console.log('💡 Проверьте правила безопасности в Firebase Console');
           }
           
           // Подписываемся на изменения в реальном времени
-          firebaseCleanup = subscribeToUserData(user.id, (data) => {
-            console.log('🔥 Получены обновления с Firebase:', data);
-            // Здесь обновляем локальные данные
-          });
+          try {
+            firebaseCleanup = subscribeToUserData(user.id, (data) => {
+              console.log('🔥 Получены обновления с Firebase:', data);
+              // Здесь обновляем локальные данные
+            });
+          } catch (subscribeError) {
+            console.log('⚠️ Не удалось подписаться на обновления');
+          }
           
           console.log('🔥 Firebase синхронизация активирована');
-        } catch (firebaseError) {
-          console.log('ℹ️ Firebase не настроен, используем Upstash');
+        } catch (firebaseError: any) {
+          console.log('ℹ️ Firebase не настроен или недоступен:', firebaseError.message);
+          console.log('📦 Используем Upstash для синхронизации');
         }
         
         // Upstash синхронизация (резервная)
@@ -136,19 +156,15 @@ function App() {
         const hasCloudData = await checkCloudForUpdates(user.id);
         
         if (hasCloudData) {
-          // Спрашиваем пользователя о загрузке
-          const shouldLoad = confirm(
-            '☁️ Найдены данные в облаке!\n\n' +
-            'Хотите загрузить их?\n' +
-            '(Это заменит текущие локальные данные)'
-          );
-          
-          if (shouldLoad) {
-            const success = await loadFromCloud(user.id);
-            if (success) {
-              alert('✅ Данные загружены из облака! Страница будет перезагружена.');
+          // Автоматически загружаем данные из облака (без подтверждения)
+          const success = await loadFromCloud(user.id);
+          if (success) {
+            console.log('☁️ Данные автоматически загружены из облака');
+            // Тихо перезагружаем страницу для применения данных
+            setTimeout(() => {
               window.location.reload();
-            }
+            }, 500);
+            return; // Выходим, чтобы не настраивать синхронизацию дважды
           }
         }
         

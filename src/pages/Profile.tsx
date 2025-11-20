@@ -295,14 +295,10 @@ export const Profile: React.FC = () => {
                 if (!user) return;
                 try {
                   const { saveToCloud } = await import('../services/syncService');
-                  const success = await saveToCloud(user.id);
-                  if (success) {
-                    alert('✅ Данные сохранены в облако!');
-                  } else {
-                    alert('❌ Ошибка сохранения в облако');
-                  }
+                  await saveToCloud(user.id);
+                  console.log('✅ Данные сохранены в облако');
                 } catch (error) {
-                  alert('❌ Ошибка сохранения в облако');
+                  console.error('❌ Ошибка сохранения в облако:', error);
                 }
               }}
               className="p-4 glass rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all flex items-center space-x-3"
@@ -327,13 +323,13 @@ export const Profile: React.FC = () => {
                   const { loadFromCloud } = await import('../services/syncService');
                   const success = await loadFromCloud(user.id);
                   if (success) {
-                    alert('✅ Данные загружены из облака! Страница будет перезагружена.');
+                    console.log('✅ Данные загружены из облака');
                     window.location.reload();
                   } else {
-                    alert('ℹ️ Данные в облаке не найдены');
+                    console.log('ℹ️ Данные в облаке не найдены');
                   }
                 } catch (error) {
-                  alert('❌ Ошибка загрузки из облака');
+                  console.error('❌ Ошибка загрузки из облака:', error);
                 }
               }}
               className="p-4 glass rounded-xl hover:bg-white/50 dark:hover:bg-gray-800/50 transition-all flex items-center space-x-3"
@@ -382,10 +378,10 @@ export const Profile: React.FC = () => {
                     const { uploadUserData } = await import('../utils/syncUtils');
                     const success = await uploadUserData(file);
                     if (success) {
-                      alert('Данные успешно импортированы! Страница будет перезагружена.');
+                      console.log('✅ Данные успешно импортированы');
                       window.location.reload();
                     } else {
-                      alert('Ошибка импорта данных');
+                      console.error('❌ Ошибка импорта данных');
                     }
                   }
                 };
@@ -408,16 +404,19 @@ export const Profile: React.FC = () => {
           <div className="mt-4 space-y-2">
             <div className="p-3 sm:p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl">
               <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2">
-                ✨ <strong>Автоматическая синхронизация:</strong> Все изменения автоматически сохраняются локально.
+                ✨ <strong>Автоматическая синхронизация:</strong> Все изменения автоматически сохраняются в облако каждые 3 минуты.
               </p>
               <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
-                💾 <strong>Синхронизация между устройствами:</strong> Скачайте БД на одном устройстве и загрузите на другом.
+                💾 <strong>Синхронизация между устройствами:</strong> Войдите в аккаунт на любом устройстве - данные загрузятся автоматически.
               </p>
             </div>
             
             <div className="p-3 sm:p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+              <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 mb-2">
+                🔄 <strong>Реал-тайм синхронизация:</strong> При использовании Firebase все изменения синхронизируются мгновенно.
+              </p>
               <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
-                🔄 <strong>Как синхронизировать:</strong> Нажмите "Скачать БД" → Перенесите файл → Нажмите "Загрузить БД" на другом устройстве.
+                👥 <strong>Онлайн статус:</strong> В шапке сайта видно сколько пользователей онлайн прямо сейчас.
               </p>
             </div>
           </div>
