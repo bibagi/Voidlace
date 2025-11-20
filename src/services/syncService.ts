@@ -1,6 +1,7 @@
 // Сервис синхронизации через Vercel API
 
 const API_URL = '/api/sync';
+const USE_MOCK = import.meta.env.DEV && !import.meta.env.VITE_USE_REAL_API;
 
 export interface SyncData {
   auth?: string;
@@ -53,23 +54,33 @@ export const saveToCloud = async (userId: string, silent = false): Promise<boole
       theme: themeData || '',
     };
 
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId,
-        action: 'save',
-        data,
-      }),
-    });
+    let result;
+    
+    if (USE_MOCK) {
+      // Используем mock API для локальной разработки
+      const { mockSyncApi } = await import('./mockSyncApi');
+      result = await mockSyncApi({ userId, action: 'save', data });
+      console.log('🔧 Используется mock API (локальная разработка)');
+    } else {
+      // Используем реальный API
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          action: 'save',
+          data,
+        }),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to save data');
+      if (!response.ok) {
+        throw new Error('Failed to save data');
+      }
+
+      result = await response.json();
     }
-
-    const result = await response.json();
     console.log('✅ Данные сохранены в облако');
     
     if (!silent) {
@@ -93,27 +104,46 @@ export const saveToCloud = async (userId: string, silent = false): Promise<boole
  */
 export const loadFromCloud = async (userId: string): Promise<boolean> => {
   try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId,
-        action: 'load',
-      }),
-    });
+    let result;
+    
+    if (USE_MOCK) {
+      // Используем mock API
+      const { mockSyncApi } = await import('./mockSyncApi');
+      try {
+        result = await mockSyncApi({ userId, action: 'load' });
+        console.log('🔧 Используется mock API (локальная разработка)');
+      } catch (error: any) {
+        if (error.status === 404) {
+          console.log('ℹ️ Данные в облаке не найдены');
+          return false;
+        }
+        throw error;
+      }
+    } else {
+      // Используем реальный API
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          action: 'load',
+        }),
+      });
 
-    if (response.status === 404) {
-      console.log('ℹ️ Данные в облаке не найдены');
-      return false;
+      if (response.status === 404) {
+        console.log('ℹ️ Данные в облаке не найдены');
+        return false;
+      }
+
+      if (!response.ok) {
+        throw new Error('Failed to load data');
+      }
+
+      result = await response.json();
     }
-
-    if (!response.ok) {
-      throw new Error('Failed to load data');
-    }
-
-    const result = await response.json();
+    
     const data: SyncData = result.data;
 
     // Восстанавливаем данные
@@ -165,18 +195,30 @@ export const loadFromCloud = async (userId: string): Promise<boolean> => {
  */
 export const checkCloudForUpdates = async (userId: string): Promise<boolean> => {
   try {
-    const response = await fetch(API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        userId,
-        action: 'load',
-      }),
-    });
+    if (USE_MOCK) {
+      // Проверяем mock storage
+      const { mockSyncApi } = await import('./mockSyncApi');
+      try {
+        await mockSyncApi({ userId, action: 'load' });
+        return true;
+      } catch {
+        return false;
+      }
+    } else {
+      // Проверяем реальный API
+      const response = await fetch(API_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId,
+          action: 'load',
+        }),
+      });
 
-    return response.ok;
+      return response.ok;
+    }
   } catch (error) {
     return false;
   }
