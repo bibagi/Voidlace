@@ -7,19 +7,44 @@ export const OnlineUsers: React.FC = () => {
   const [onlineCount, setOnlineCount] = useState(0);
   const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
   const [showList, setShowList] = useState(false);
+  const [isFirebaseReady, setIsFirebaseReady] = useState(false);
 
   useEffect(() => {
-    // Подписываемся на количество онлайн пользователей
-    const unsubscribeCount = getOnlineCount(setOnlineCount);
-    
-    // Подписываемся на список онлайн пользователей
-    const unsubscribeUsers = getOnlineUsers(setOnlineUsers);
+    let unsubscribeCount: (() => void) | undefined;
+    let unsubscribeUsers: (() => void) | undefined;
+
+    const setupFirebase = async () => {
+      try {
+        // Подписываемся на количество онлайн пользователей
+        unsubscribeCount = getOnlineCount((count) => {
+          setOnlineCount(count);
+          setIsFirebaseReady(true);
+        });
+        
+        // Подписываемся на список онлайн пользователей
+        unsubscribeUsers = getOnlineUsers((users) => {
+          setOnlineUsers(users);
+        });
+
+        console.log('👥 Подписка на онлайн пользователей активирована');
+      } catch (error) {
+        console.log('⚠️ Firebase онлайн статус недоступен:', error);
+        setIsFirebaseReady(false);
+      }
+    };
+
+    setupFirebase();
 
     return () => {
-      unsubscribeCount();
-      unsubscribeUsers();
+      if (unsubscribeCount) unsubscribeCount();
+      if (unsubscribeUsers) unsubscribeUsers();
     };
   }, []);
+
+  // Не показываем компонент если Firebase не готов
+  if (!isFirebaseReady) {
+    return null;
+  }
 
   return (
     <div className="relative">

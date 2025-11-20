@@ -130,15 +130,20 @@ export const getOnlineUsers = (callback: (users: any[]) => void) => {
       const userId = childSnapshot.key;
       const userData = childSnapshot.val();
       
-      if (userData.status?.state === 'online' && userData.info) {
+      // Проверяем только статус онлайн, info опционально
+      if (userData.status?.state === 'online') {
         users.push({
           id: userId,
-          ...userData.info,
+          username: userData.info?.username || 'Пользователь',
+          avatar: userData.info?.avatar || 'https://ui-avatars.com/api/?name=User',
+          role: userData.info?.role || 'user',
+          isPremium: userData.info?.isPremium || false,
           lastSeen: userData.status.lastSeen,
         });
       }
     });
     
+    console.log(`👥 Найдено онлайн пользователей: ${users.length}`);
     callback(users);
   });
 };
@@ -216,6 +221,7 @@ export const getOnlineCount = (callback: (count: number) => void) => {
       }
     });
     
+    console.log(`👥 Онлайн пользователей: ${count}`);
     callback(count);
   });
 };
