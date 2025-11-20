@@ -124,9 +124,18 @@ function App() {
                 // Здесь можно восстановить данные
               } else {
                 console.log('🔥 Данных на сервере нет, создаем первую синхронизацию');
-                // Сохраняем текущие данные на сервер
+                // Сохраняем текущие данные на сервер (очищаем undefined)
+                const cleanUser = {
+                  id: user.id,
+                  username: user.username,
+                  email: user.email,
+                  role: user.role,
+                  avatar: user.avatar || null,
+                  isPremium: user.isPremium || false,
+                  createdAt: user.createdAt,
+                };
                 await saveUserData(user.id, {
-                  profile: user,
+                  profile: cleanUser,
                   library: [],
                   progress: {},
                   settings: {},

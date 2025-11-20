@@ -98,12 +98,12 @@ export const setupOnlinePresence = (userId: string, userData: any) => {
     lastSeen: serverTimestamp(),
   };
   
-  // Информация о пользователе
+  // Информация о пользователе (очищаем undefined значения)
   const userInfo = {
-    username: userData.username,
-    avatar: userData.avatar,
-    role: userData.role,
-    isPremium: userData.isPremium,
+    username: userData.username || 'Пользователь',
+    avatar: userData.avatar || null,
+    role: userData.role || 'user',
+    isPremium: userData.isPremium || false,
   };
   
   // Устанавливаем онлайн статус
